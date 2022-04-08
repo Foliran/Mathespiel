@@ -1,8 +1,7 @@
 #include "mybutton.h"
 
-MyButton::MyButton(int xCoord, int yCoord, bool active)
+MyButton::MyButton(int Coord, bool active)
 {
-    x = xCoord;
-    y = yCoord;
+    index = Coord;
     isActive = active;
 }

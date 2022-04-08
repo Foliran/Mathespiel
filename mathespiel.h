@@ -2,6 +2,8 @@
 #define MATHESPIEL_H
 
 #include <QMainWindow>
+#include <QGridLayout>
+#include <QVBoxLayout>
 #include "mybutton.h"
 #include <vector>
 
@@ -14,8 +16,17 @@ public:
     ~Mathespiel();
     void setupUI();
     void setupButtons();
-    void copyButtonClicked();
+
 private:
-    std::vector<std::vector<MyButton*>> buttons;
+    std::vector<MyButton*> buttons;
+    QVBoxLayout* mainLayout;
+    QWidget* buttonsWidget;
+    QGridLayout* gridLayout;
+    QPushButton *copyButton;
+    int row, column;
+
+public slots:
+    void copyButtonClicked();
+    void anyButtonClicked();
 };
 #endif // MATHESPIEL_H

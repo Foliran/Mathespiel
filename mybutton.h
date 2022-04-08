@@ -3,13 +3,15 @@
 
 #include <QPushButton>
 #include <QWidget>
+#include <QObject>
 
 class MyButton : public QPushButton
 {
+Q_OBJECT
+
 public:
-    MyButton(int, int, bool);
-    int x;
-    int y;
+    MyButton(int, bool);
+    int index;
     bool isActive;
 };
 
