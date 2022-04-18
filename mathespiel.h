@@ -23,6 +23,10 @@ private:
     QWidget* buttonsWidget;
     QGridLayout* gridLayout;
     QPushButton *copyButton;
+    MyButton *lastButton;
+    MyButton *clickedButton;
+    MyButton *preLastButton;
+    bool secondClick;
     int row, column;
 
 public slots:
