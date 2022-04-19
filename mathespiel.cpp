@@ -87,6 +87,7 @@ void Mathespiel::copyButtonClicked()
             }
         }
     }
+    //TODO: Checke, ob nohc Paare übrig sind
 }
 
 void Mathespiel::anyButtonClicked()
@@ -99,15 +100,12 @@ void Mathespiel::anyButtonClicked()
     //checke, ob der Click vom Wert her erlaubt ist erlaubt ist
     if((lastButton->text().toInt() == clickedButton->text().toInt()) || (lastButton->text().toInt() + clickedButton->text().toInt() == 10))
     {
-        qDebug() << "One of the cases is true";
         //Dann checke, ob beide aktiv sind
-        if((lastButton->isActive && clickedButton->isActive) && (lastButton->index != clickedButton->index))
+        if((lastButton->isActive && clickedButton->isActive))
         {
-            qDebug() << "And both buttons are active";
             //Dann checke, ob Position passt
             if(std::abs(lastButton->index - clickedButton->index) == 1)
             {
-                qDebug() << "Buttons are 1 apart";
                 clickedButton->isActive = false;
                 lastButton->isActive = false;
                 clickedButton->setStyleSheet("background-color: black");
@@ -116,15 +114,18 @@ void Mathespiel::anyButtonClicked()
             //The last two cses doen't work anymore
             else if ((lastButton->index % 9) == (clickedButton->index % 9))
             {
-                qDebug() << "Buttons are same column";
-                int minimum = std::min(lastButton->index, clickedButton->index);
-                int maximum = std::max(lastButton->index, clickedButton->index);
                 bool check = true;
-                for(int i = minimum; i <= maximum; i+=9)
+                if(std::abs(lastButton->index / 9 - clickedButton->index / 9) != 1)
                 {
-                    if(buttons[i]->isActive)
+                    int minimum = std::min(lastButton->index, clickedButton->index);
+                    int maximum = std::max(lastButton->index, clickedButton->index);
+                    for(int i = minimum+9; i <= maximum-9; i+=9)
                     {
-                        check = false;
+                        qDebug() << "Check button " << i << ", isActive is" << buttons[i]->isActive;
+                        if(buttons[i]->isActive)
+                        {
+                            check = false;
+                        }
                     }
                 }
                 if(check)
@@ -136,13 +137,12 @@ void Mathespiel::anyButtonClicked()
                 }
             }
             else {
-                qDebug() << "Check the last case";
                 int minimum = std::min(lastButton->index, clickedButton->index);
                 int maximum = std::max(lastButton->index, clickedButton->index);
                 bool check = true;
-                for(int i = minimum; i <= maximum; i++)
+                for(int i = minimum+1; i <= maximum-1; i++)
                 {
-                    if(!buttons[i]->isActive)
+                    if(buttons[i]->isActive)
                     {
                         check = false;
                     }
@@ -160,5 +160,4 @@ void Mathespiel::anyButtonClicked()
     }
     preLastButton = lastButton;
     lastButton = clickedButton;
-    qDebug() << "---------------------------------------------";
 }
