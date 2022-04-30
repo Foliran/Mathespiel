@@ -32,5 +32,7 @@ private:
 public slots:
     void copyButtonClicked();
     void anyButtonClicked();
+    //void checkForDeletableButtons();
+    bool checkForPairs();
 };
 #endif // MATHESPIEL_H

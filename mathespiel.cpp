@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <QVBoxLayout>
 #include <QGridLayout>
+#include <QMessageBox>
+#include <QStyleFactory>
 
 Mathespiel::Mathespiel(QWidget *parent)
     : QWidget(parent)
@@ -72,27 +74,41 @@ void Mathespiel::setupUI()
 void Mathespiel::copyButtonClicked()
 {
     int length = (int)buttons.size();
-    for(int i = 0; i < length; i++) {
-        if(buttons[i]->isActive)
-        {
-            MyButton *newButton = new MyButton(length+i, true);
-            newButton->setFixedSize(30, 30);
-            newButton->setText(buttons[i]->text());
-            newButton->setStyleSheet("background-color: white");
-            buttons.push_back(newButton);
-            gridLayout->addWidget(newButton, row, column++);
-            if(column % 9 == 0){
-                row++;
-                column = 0;
+    int newIndex = length;
+    if(checkForPairs())
+    {
+        QMessageBox *msg = new QMessageBox();
+        msg->setAttribute(Qt::WA_DeleteOnClose);
+        msg->setStandardButtons(QMessageBox::Ok);
+        msg->setText("<p align='center'>Es sind noch Paare übrig!<br>");
+        msg->setStyle(QStyleFactory::create("Fusion"));
+        msg->show();
+    }
+    else
+    {
+        for(int i = 0; i < length; i++) {
+            if(buttons[i]->isActive)
+            {
+                MyButton *newButton = new MyButton(newIndex++, true);
+                newButton->setFixedSize(30, 30);
+                newButton->setText(buttons[i]->text());
+                newButton->setStyleSheet("background-color: white");
+                connect(newButton, &QPushButton::clicked, this, &Mathespiel::anyButtonClicked);
+                buttons.push_back(newButton);
+                gridLayout->addWidget(newButton, row, column++);
+                if(column % 9 == 0){
+                    row++;
+                    column = 0;
+                }
             }
         }
     }
-    //TODO: Checke, ob nohc Paare übrig sind
 }
 
 void Mathespiel::anyButtonClicked()
 {
     clickedButton = qobject_cast<MyButton*>(sender());
+    //qDebug() << clickedButton->isActive << clickedButton->index;
     if(preLastButton->isActive) preLastButton->setStyleSheet("background-color: white");
     if(lastButton->isActive) lastButton->setStyleSheet("background-color: green");
     if(clickedButton->isActive) clickedButton->setStyleSheet("background-color: green");
@@ -100,64 +116,142 @@ void Mathespiel::anyButtonClicked()
     //checke, ob der Click vom Wert her erlaubt ist erlaubt ist
     if((lastButton->text().toInt() == clickedButton->text().toInt()) || (lastButton->text().toInt() + clickedButton->text().toInt() == 10))
     {
+        //Checke, ob es verschiedene Buttons sind
         //Dann checke, ob beide aktiv sind
-        if((lastButton->isActive && clickedButton->isActive))
+        if(!(clickedButton->index == lastButton->index))
         {
-            //Dann checke, ob Position passt
-            if(std::abs(lastButton->index - clickedButton->index) == 1)
+            if((lastButton->isActive && clickedButton->isActive))
             {
-                clickedButton->isActive = false;
-                lastButton->isActive = false;
-                clickedButton->setStyleSheet("background-color: black");
-                lastButton->setStyleSheet("background-color: black");
-            }
-            //The last two cses doen't work anymore
-            else if ((lastButton->index % 9) == (clickedButton->index % 9))
-            {
-                bool check = true;
-                if(std::abs(lastButton->index / 9 - clickedButton->index / 9) != 1)
+                //Dann checke, ob Position passt
+                if(std::abs(lastButton->index - clickedButton->index) == 1)
                 {
+                    clickedButton->isActive = false;
+                    lastButton->isActive = false;
+                    clickedButton->setStyleSheet("background-color: black");
+                    lastButton->setStyleSheet("background-color: black");
+                }
+                else if ((lastButton->index % 9) == (clickedButton->index % 9))
+                {
+                    bool check = true;
+                    if(std::abs(lastButton->index / 9 - clickedButton->index / 9) != 1)
+                    {
+                        int minimum = std::min(lastButton->index, clickedButton->index);
+                        int maximum = std::max(lastButton->index, clickedButton->index);
+                        for(int i = minimum+9; i <= maximum-9; i+=9)
+                        {
+                           // qDebug() << "Check button " << i << ", isActive is" << buttons[i]->isActive;
+                            if(buttons[i]->isActive)
+                            {
+                                check = false;
+                            }
+                        }
+                    }
+                    if(check)
+                    {
+                        clickedButton->isActive = false;
+                        lastButton->isActive = false;
+                        clickedButton->setStyleSheet("background-color: black");
+                        lastButton->setStyleSheet("background-color: black");
+                    }
+                }
+                else {
                     int minimum = std::min(lastButton->index, clickedButton->index);
                     int maximum = std::max(lastButton->index, clickedButton->index);
-                    for(int i = minimum+9; i <= maximum-9; i+=9)
+                    bool check = true;
+                    for(int i = minimum+1; i <= maximum-1; i++)
                     {
-                        qDebug() << "Check button " << i << ", isActive is" << buttons[i]->isActive;
                         if(buttons[i]->isActive)
                         {
                             check = false;
                         }
                     }
-                }
-                if(check)
-                {
-                    clickedButton->isActive = false;
-                    lastButton->isActive = false;
-                    clickedButton->setStyleSheet("background-color: black");
-                    lastButton->setStyleSheet("background-color: black");
-                }
-            }
-            else {
-                int minimum = std::min(lastButton->index, clickedButton->index);
-                int maximum = std::max(lastButton->index, clickedButton->index);
-                bool check = true;
-                for(int i = minimum+1; i <= maximum-1; i++)
-                {
-                    if(buttons[i]->isActive)
+                    if(check)
                     {
-                        check = false;
+                        clickedButton->isActive = false;
+                        lastButton->isActive = false;
+                        clickedButton->setStyleSheet("background-color: black");
+                        lastButton->setStyleSheet("background-color: black");
                     }
-                }
-                if(check)
-                {
-                    clickedButton->isActive = false;
-                    lastButton->isActive = false;
-                    clickedButton->setStyleSheet("background-color: black");
-                    lastButton->setStyleSheet("background-color: black");
-                }
 
+                }
             }
         }
     }
     preLastButton = lastButton;
     lastButton = clickedButton;
+    //TODO Überlegen, wo die checkForDeletaleButtons aufgerufen werden sollte
+    //checkForDeletableButtons();
+}
+
+/*void Mathespiel::checkForDeletableButtons() {
+    int checkStart = 0;
+    int checksum = 0;
+    while((checkStart+8) < (int)buttons.size())
+    {
+        for(int i = checkStart; i < (checkStart+9); i++)
+        {
+            if(!buttons[i]->isActive) checksum++;
+        }
+        //qDebug() << "Checksum from " << checkStart << " to " << checkStart+8 << " is " << checksum;
+        // Hie Sachen machen
+        if(checksum == 9)
+        {
+            qDebug() << "Found series at checkStart = " << checkStart;
+            for(int idx = checkStart; idx < checkStart+9; idx++)
+            {
+
+                //Gehe von checkStart bzw idx aus nach unten durch
+                int x = idx;
+                gridLayout->removeWidget(buttons[x]);
+                while(x < (int)buttons.size())
+                {
+                    qDebug() << "Remove Button at index " << x;
+                    //Setze jeden Button einen Platz nach oben;
+                    gridLayout->removeWidget(buttons[x]);
+                    if((x+9) < (int)buttons.size()) gridLayout->addWidget(buttons[x+9], x/9, x%9);
+                    buttons[x]->index -= 9;
+                    x += 9;
+                }
+                buttons[idx]->close();
+                buttons[idx]->index = -1;
+            }
+            for(int i = checkStart+9; i < (int)buttons.size(); i++){
+                buttons[i]->index -= 9;
+            }
+            buttons.erase(buttons.begin()+checkStart, buttons.begin()+checkStart+8);
+        }
+        checksum = 0;
+        checkStart++;
+    }
+
+}*/
+
+bool Mathespiel::checkForPairs() {
+    bool pairsLeft = false;
+    for(int i = 0; i < (int)(buttons.size()-1); i++)
+    {
+        if(buttons[i]->isActive && buttons[i+1]->isActive)
+        {
+            if((buttons[i]->text().toInt() == buttons[i+1]->text().toInt()) || (buttons[i]->text().toInt() + buttons[i+1]->text().toInt() == 10))
+            {
+                pairsLeft = true;
+            }
+        }
+    }
+    for(int i = 0; i < ((int)buttons.size()-9); i++)
+    {
+        int y = i;
+        while((y < (int)buttons.size() - 9) && buttons[y]->isActive)
+        {
+            y += 9;
+        }
+        if(buttons[i]->isActive && buttons[y]->isActive)
+        {
+            /*if((buttons[i]->text().toInt() == buttons[y]->text().toInt()) || ((buttons[i]->text().toInt() + buttons[y]->text().toInt()) == 10))
+            {
+                pairsLeft = true;
+            }*/
+        }
+    }
+    return pairsLeft;
 }
