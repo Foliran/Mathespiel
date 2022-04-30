@@ -108,7 +108,6 @@ void Mathespiel::copyButtonClicked()
 void Mathespiel::anyButtonClicked()
 {
     clickedButton = qobject_cast<MyButton*>(sender());
-    //qDebug() << clickedButton->isActive << clickedButton->index;
     if(preLastButton->isActive) preLastButton->setStyleSheet("background-color: white");
     if(lastButton->isActive) lastButton->setStyleSheet("background-color: green");
     if(clickedButton->isActive) clickedButton->setStyleSheet("background-color: green");
@@ -139,7 +138,6 @@ void Mathespiel::anyButtonClicked()
                         int maximum = std::max(lastButton->index, clickedButton->index);
                         for(int i = minimum+9; i <= maximum-9; i+=9)
                         {
-                           // qDebug() << "Check button " << i << ", isActive is" << buttons[i]->isActive;
                             if(buttons[i]->isActive)
                             {
                                 check = false;
@@ -179,11 +177,10 @@ void Mathespiel::anyButtonClicked()
     }
     preLastButton = lastButton;
     lastButton = clickedButton;
-    //TODO Überlegen, wo die checkForDeletaleButtons aufgerufen werden sollte
-    //checkForDeletableButtons();
+    checkForDeletableButtons();
 }
 
-/*void Mathespiel::checkForDeletableButtons() {
+void Mathespiel::checkForDeletableButtons() {
     int checkStart = 0;
     int checksum = 0;
     while((checkStart+8) < (int)buttons.size())
@@ -196,35 +193,23 @@ void Mathespiel::anyButtonClicked()
         // Hie Sachen machen
         if(checksum == 9)
         {
-            qDebug() << "Found series at checkStart = " << checkStart;
-            for(int idx = checkStart; idx < checkStart+9; idx++)
-            {
 
-                //Gehe von checkStart bzw idx aus nach unten durch
-                int x = idx;
-                gridLayout->removeWidget(buttons[x]);
-                while(x < (int)buttons.size())
-                {
-                    qDebug() << "Remove Button at index " << x;
-                    //Setze jeden Button einen Platz nach oben;
-                    gridLayout->removeWidget(buttons[x]);
-                    if((x+9) < (int)buttons.size()) gridLayout->addWidget(buttons[x+9], x/9, x%9);
-                    buttons[x]->index -= 9;
-                    x += 9;
-                }
-                buttons[idx]->close();
-                buttons[idx]->index = -1;
+            for(int idx = checkStart; idx < ((int)buttons.size() - 10); idx++)
+            {
+                qDebug() << "idx is " << idx;
+                gridLayout->replaceWidget(buttons[idx], buttons[idx+9]);
+                buttons[idx+9]->index -= 9;
             }
-            for(int i = checkStart+9; i < (int)buttons.size(); i++){
-                buttons[i]->index -= 9;
+            for(int idx = checkStart; idx < (int)buttons.size(); idx++)
+            {
+                buttons[idx]->close();
             }
             buttons.erase(buttons.begin()+checkStart, buttons.begin()+checkStart+8);
         }
         checksum = 0;
         checkStart++;
     }
-
-}*/
+}
 
 bool Mathespiel::checkForPairs() {
     bool pairsLeft = false;
@@ -247,10 +232,10 @@ bool Mathespiel::checkForPairs() {
         }
         if(buttons[i]->isActive && buttons[y]->isActive)
         {
-            /*if((buttons[i]->text().toInt() == buttons[y]->text().toInt()) || ((buttons[i]->text().toInt() + buttons[y]->text().toInt()) == 10))
+            if((buttons[i]->text().toInt() == buttons[y]->text().toInt()) || ((buttons[i]->text().toInt() + buttons[y]->text().toInt()) == 10))
             {
                 pairsLeft = true;
-            }*/
+            }
         }
     }
     return pairsLeft;
