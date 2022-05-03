@@ -5,6 +5,7 @@
 #include <QGridLayout>
 #include <QMessageBox>
 #include <QStyleFactory>
+#include <QSpacerItem>
 
 Mathespiel::Mathespiel(QWidget *parent)
     : QWidget(parent)
@@ -51,6 +52,7 @@ void Mathespiel::setupButtons()
 void Mathespiel::setupUI()
 {
     gridLayout = new QGridLayout();
+
     for(int i = 0; i < (int)buttons.size(); i++)
     {
         gridLayout->addWidget(buttons[i], row, column++);
@@ -59,6 +61,8 @@ void Mathespiel::setupUI()
             row++;
         }
     }
+    gridLayout->setSizeConstraint(QLayout::SetFixedSize);
+    row--;
     copyButton = new QPushButton("Abschreiben");
     copyButton->setText("Copy!");
     buttonsWidget = new QWidget();
@@ -67,6 +71,7 @@ void Mathespiel::setupUI()
     mainLayout = new QVBoxLayout();
     mainLayout->addWidget(copyButton);
     mainLayout->addWidget(buttonsWidget);
+    mainLayout->setSizeConstraint(QLayout::SetFixedSize);
     setLayout(mainLayout);
     row++;
 }
@@ -189,22 +194,34 @@ void Mathespiel::checkForDeletableButtons() {
         {
             if(!buttons[i]->isActive) checksum++;
         }
-        //qDebug() << "Checksum from " << checkStart << " to " << checkStart+8 << " is " << checksum;
-        // Hie Sachen machen
         if(checksum == 9)
         {
+            for(auto i: buttons)
+            {
+                i->hide();
+            }
+            buttons.erase(buttons.begin()+checkStart, buttons.begin()+checkStart+9);
+            QGridLayout *newGrid = new QGridLayout();
+            row = 0, column = 0;
+            for(int i = 0; i < (int)buttons.size(); i++)
+            {
 
-            for(int idx = checkStart; idx < ((int)buttons.size() - 10); idx++)
-            {
-                qDebug() << "idx is " << idx;
-                gridLayout->replaceWidget(buttons[idx], buttons[idx+9]);
-                buttons[idx+9]->index -= 9;
+                newGrid->addWidget(buttons[i], row, column++);
+                if((column % 9) == 0) {
+                    column = 0;
+                    row++;
+                }
+                buttons[i]->index = i;
+                buttons[i]->setVisible(true);
             }
-            for(int idx = checkStart; idx < (int)buttons.size(); idx++)
-            {
-                buttons[idx]->close();
-            }
-            buttons.erase(buttons.begin()+checkStart, buttons.begin()+checkStart+8);
+            newGrid->setSizeConstraint(QLayout::SetFixedSize);
+            QWidget *newButtonsWidget = new QWidget();
+            newButtonsWidget->setLayout(newGrid);
+            mainLayout->removeWidget(buttonsWidget);
+            buttonsWidget = newButtonsWidget;
+            mainLayout->addWidget(newButtonsWidget);
+            mainLayout->setSizeConstraint(QLayout::SetFixedSize);
+            gridLayout = newGrid;
         }
         checksum = 0;
         checkStart++;
@@ -230,7 +247,12 @@ bool Mathespiel::checkForPairs() {
         {
             y += 9;
         }
-        if(buttons[i]->isActive && buttons[y]->isActive)
+        bool test = true;
+        for(int j = i; j <= y; j+=9)
+        {
+            if(buttons[i]->isActive) test = false;
+        }
+        if(buttons[i]->isActive && buttons[y]->isActive && test)
         {
             if((buttons[i]->text().toInt() == buttons[y]->text().toInt()) || ((buttons[i]->text().toInt() + buttons[y]->text().toInt()) == 10))
             {
