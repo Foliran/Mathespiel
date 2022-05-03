@@ -9,4 +9,4 @@ Rules:
 Have fun!
 
 
-(I think I just won this game a handful of times, and I do not remember how I did it, so if you figured out a nice strategy, you have my respect!)
+(I think I just won this game only a handful of times, and I do not remember how I did it, so if you figured out a nice strategy, you have my respect!)
